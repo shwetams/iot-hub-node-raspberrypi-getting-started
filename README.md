@@ -6,7 +6,7 @@ author: shizn
 
 # Get Started with Microsoft Azure IoT Raspberry Pi Starter Kit
 
-This repo contains the source code to help you get familiar with Azure IoT using the Azure IoT Raspberry Pi Starter Kit. You will find the [lesson-based tutorials on Azure.com](http://www.azure.com/en-us/documentation/articles/iot-hub-raspberry-pi-kit-node-get-started/).
+This repo contains the source code to help you get familiar with Azure IoT using the Azure IoT Raspberry Pi Starter Kit. You will find the [lesson-based tutorials on Azure.com](http://azure.microsoft.com/en-us/documentation/articles/iot-hub-raspberry-pi-kit-node-get-started/).
 
 - [Lesson 1: Configure your device](https://azure.microsoft.com/en-us/documentation/articles/iot-hub-raspberry-pi-kit-node-lesson1-configure-your-device/)
 - [Lesson 2: Create your IoT hub](https://azure.microsoft.com/en-us/documentation/articles/iot-hub-raspberry-pi-kit-node-lesson2-get-azure-tools-win32/)
