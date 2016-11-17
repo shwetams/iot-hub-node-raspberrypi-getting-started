@@ -3,25 +3,15 @@
 */
 'use strict';
 
+var fs = require('fs');
+var path = require('path');
 var wpi = require('wiring-pi');
+
+// Use MQTT protocol to communicate with IoT hub
+var Client = require('azure-iot-device').Client;
+var ConnectionString = require('azure-iot-device').ConnectionString;
 var Message = require('azure-iot-device').Message;
-// Use AMQP client to communicate with IoT Hub
-var clientFromConnectionString = require('azure-iot-device-amqp').clientFromConnectionString;
-
-// Get device id from IoT device connection string
-function getDeviceId(connectionString) {
-  var elements = connectionString.split(';');
-  var dict = {};
-  for (var i = 0; i < elements.length; i++) {
-    var kvp = elements[i].split('=');
-    dict[kvp[0]] = kvp[1];
-  }
-  return dict.DeviceId;
-}
-
-// Read device connection string from command line arguments
-var iotDeviceConnectionString = process.argv[2];
-var deviceId = getDeviceId(iotDeviceConnectionString);
+var Protocol = require('azure-iot-device-mqtt').Mqtt;
 
 // GPIO pin of the LED
 var CONFIG_PIN = 7;
@@ -31,8 +21,32 @@ var INTERVAL = 2000;
 var MAX_MESSAGE_COUNT = 20;
 var sentMessageCount = 0;
 
+// Prepare for GPIO operations
 wpi.setup('wpi');
 wpi.pinMode(CONFIG_PIN, wpi.OUTPUT);
+
+// Read device connection string from command line arguments and parse it
+var connectionStringParam = process.argv[2];
+var connectionString = ConnectionString.parse(connectionStringParam);
+var deviceId = connectionString.DeviceId;
+
+// fromConnectionString must specify a transport constructor, coming from any transport package.
+var client = Client.fromConnectionString(connectionStringParam, Protocol);
+
+// Configure the client to use X509 authentication if required by the connection string.
+if (connectionString.x509) {
+  // Read X.509 certificate and private key.
+  // These files should be in the current folder and use the following naming convention:
+  // [device name]-cert.pem and [device name]-key.pem, example: myraspberrypi-cert.pem
+  var options = {
+    cert : fs.readFileSync(path.join(__dirname, deviceId + '-cert.pem')).toString(),
+    key : fs.readFileSync(path.join(__dirname, deviceId + '-key.pem')).toString()
+  };
+
+  client.setOptions(options);
+
+  console.log('[Device] Using X.509 client certificate authentication');
+}
 
 /**
  * Start sending messages after getting connected to IoT Hub.
@@ -94,6 +108,5 @@ function sendMessageCallback(err) {
   }
 }
 
-// Construct IoT Hub device client and connect to IoT Hub.
-var client = clientFromConnectionString(iotDeviceConnectionString);
+// Connect to IoT Hub and send messages via the callback.
 client.open(connectCallback);
