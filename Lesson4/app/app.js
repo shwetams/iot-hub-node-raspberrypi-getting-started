@@ -3,15 +3,44 @@
 */
 'use strict';
 
+var fs = require('fs');
+var path = require('path');
 var wpi = require('wiring-pi');
-// Use AMQP client to communicate with IoT Hub
-var clientFromConnectionString = require('azure-iot-device-amqp').clientFromConnectionString;
+
+// Use MQTT protocol to communicate with IoT hub
+var Client = require('azure-iot-device').Client;
+var ConnectionString = require('azure-iot-device').ConnectionString;
+var Protocol = require('azure-iot-device-mqtt').Mqtt;
 
 // GPIO pin of the LED
 var CONFIG_PIN = 7;
 
+// Prepare for GPIO operations
 wpi.setup('wpi');
 wpi.pinMode(CONFIG_PIN, wpi.OUTPUT);
+
+// Read device connection string from command line arguments and parse it
+var connectionStringParam = process.argv[2];
+var connectionString = ConnectionString.parse(connectionStringParam);
+var deviceId = connectionString.DeviceId;
+
+// fromConnectionString must specify a transport constructor, coming from any transport package.
+var client = Client.fromConnectionString(connectionStringParam, Protocol);
+
+// Configure the client to use X509 authentication if required by the connection string.
+if (connectionString.x509) {
+  // Read X.509 certificate and private key.
+  // These files should be in the current folder and use the following naming convention:
+  // [device name]-cert.pem and [device name]-key.pem, example: myraspberrypi-cert.pem
+  var options = {
+    cert : fs.readFileSync(path.join(__dirname, deviceId + '-cert.pem')).toString(),
+    key : fs.readFileSync(path.join(__dirname, deviceId + '-key.pem')).toString()
+  };
+
+  client.setOptions(options);
+
+  console.log('[Device] Using X.509 client certificate authentication');
+}
 
 /**
  * Blink LED.
@@ -84,8 +113,5 @@ function connectCallback(err) {
   }
 }
 
-// Read device connection string from command line arguments
-var iotDeviceConnectionString = process.argv[2];
 // Construct IoT Hub device client and connect to IoT Hub.
-var client = clientFromConnectionString(iotDeviceConnectionString);
 client.open(connectCallback);
