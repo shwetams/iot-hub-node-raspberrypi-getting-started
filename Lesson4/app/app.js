@@ -19,6 +19,7 @@ var CONFIG_PIN = 7;
 wpi.setup('wpi');
 wpi.pinMode(CONFIG_PIN, wpi.OUTPUT);
 
+
 // Read device connection string from command line arguments and parse it
 var connectionStringParam = process.argv[2];
 var connectionString = ConnectionString.parse(connectionStringParam);
@@ -113,5 +114,5 @@ function connectCallback(err) {
   }
 }
 
-// Construct IoT Hub device client and connect to IoT Hub.
+// Connect to IoT Hub and send messages via the callback.
 client.open(connectCallback);
