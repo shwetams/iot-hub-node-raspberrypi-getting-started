@@ -44,7 +44,7 @@
     "storageAccountSku": "Standard_LRS",
     "iotHubVersion": "2016-02-03",
     "iotHubResourceId": "[resourceId('Microsoft.Devices/Iothubs', parameters('iotHubName'))]",
-    "docDBResourceId": "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('docDBName'))]",
+    "docDBResourceId": "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('docDBName'))]",
     "iotHubKeyName": "iothubowner",
     "iotHubKeyResource": "[resourceId('Microsoft.Devices/Iothubs/Iothubkeys', parameters('iotHubName'), variables('iotHubKeyName'))]",
     "functionAppName": "[toLower(concat(parameters('resourcePrefix'), 'func', uniquestring(resourceGroup().id)))]",
@@ -119,7 +119,7 @@
             "FUNCTIONS_EXTENSION_VERSION": "latest",
             "AzureIoTHubConnectionString": "[concat('HostName=', reference(variables('iotHubResourceId'), variables('iotHubVersion')).hostName, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey)]",
             "AzureIoTHubEventHubConnectionString": "[concat('Endpoint=', reference(variables('iotHubResourceId'), variables('iotHubVersion')).eventHubEndpoints.events.endpoint, ';SharedAccessKeyName=', variables('iotHubKeyName'), ';SharedAccessKey=', listkeys(variables('iotHubKeyResource'), variables('iotHubVersion')).primaryKey)]",
-            "DeviceStorageConnectionString": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageName'),';AccountKey=',listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageName')), '2015-05-01-preview').key1,';')]"
+            "DocDBConnectionString": "[concat('AccountEndpoint=', reference(variables('docDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('docDBResourceId'), '2015-04-08').primaryMasterKey)]"
           }
         },
         {
@@ -157,11 +157,11 @@
                 },
                 {
                   "type": "documentDB",
-                  "name": "[variables('docDBName')]",
+                  "name": "outputdocument",
                   "databaseName":"[variables('docDBName')]",
                   "collectionName": "rawmsgs",
                   "createIfNotExists": true,                  
-                  "connection": "[concat('AccountEndpoint=', reference(variables('docDBResourceId')).documentEndpoint, ';AccountKey=', listkeys(variables('docDBResourceId'), '2015-04-08').primaryMasterKey)]",
+                  "connection": "DocDBConnectionString",
                   "direction": "out"
                 }
               ]
