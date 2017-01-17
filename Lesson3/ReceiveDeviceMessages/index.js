@@ -22,7 +22,7 @@ module.exports = function (context, iotHubMessage) {
 
     context.bindings.outputdocument = JSON.stringify({ 
     id: uniqueid  + '',
-    message: JSON.stringify(iotHubMessage)
+    message: iotHubMessage
   });
 
   context.done();
